@@ -1,0 +1,12 @@
+*.gz
+*.png
+*.pth
+*.pt
+*.jpg
+1_test_files/MNIST/raw/train-labels-idx1-ubyte
+1_test_files/MNIST/raw/train-images-idx3-ubyte
+1_test_files/MNIST/raw/t10k-labels-idx1-ubyte
+1_test_files/MNIST/raw/t10k-images-idx3-ubyte
+test_old_bingo/.DS_Store
+test_old_bingo/test_6_2/.DS_Store
+.DS_Store
