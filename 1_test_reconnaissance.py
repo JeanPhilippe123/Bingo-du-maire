@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from IPython.display import display
 import numpy as np
 
-n_epochs = 3
+n_epochs = 1
 batch_size_train = 64
 batch_size_test = 1000
 learning_rate = 0.01
@@ -23,7 +23,7 @@ torch.manual_seed(random_seed)
 #%%
 #Download pictures to train
 train_loader = torch.utils.data.DataLoader(
-  torchvision.datasets.MNIST('/Users/JP/Documents/Bingo/1_test_files', train=True, download=True,
+  torchvision.datasets.MNIST('/Users/JP/Documents/Crosser-le-Maire/1_test_files', train=True, download=True,
                               transform=torchvision.transforms.Compose([
                                 torchvision.transforms.ToTensor(),
                                 torchvision.transforms.Normalize(
@@ -33,16 +33,16 @@ train_loader = torch.utils.data.DataLoader(
 
 #Download pictures to train test
 test_loader = torch.utils.data.DataLoader(
-  torchvision.datasets.MNIST('/Users/JP/Documents/Bingo/1_test_files', train=False, download=True,
+  torchvision.datasets.MNIST('/Users/JP/Documents/Crosser-le-Maire/1_test_files', train=False, download=True,
                               transform=torchvision.transforms.Compose([
                                 torchvision.transforms.ToTensor(),
                                 torchvision.transforms.Normalize(
-                                  (0.1307,), (0.3081,))
+                                  (0.1307), (0.3081,))
                               ])),
   batch_size=batch_size_test, shuffle=True)
 
 test_loader_6_2 = torch.utils.data.DataLoader(
-  torchvision.datasets.ImageFolder('/Users/JP/Documents/Bingo/test_old_bingo',
+  torchvision.datasets.ImageFolder('/Users/JP/Documents/Crosser-le-Maire/test_old_Bingo',
                               transform=torchvision.transforms.Compose([
                                 torchvision.transforms.ToTensor(),
                                 torchvision.transforms.Normalize(
@@ -51,15 +51,14 @@ test_loader_6_2 = torch.utils.data.DataLoader(
   batch_size=5, shuffle=True)
 # for data, target in test_loader:
 #     print(data.shape, target.shape)
-# for data, target in test_loader:
-#     for img in data[0]:
-#         plt.figure()
-#         plt.imshow(img)
+for data, target in test_loader:
+    for img in data[0]:
+        plt.figure()
+        plt.imshow(img)
 for data, target in test_loader_6_2:
     for img in data:
-        for im in img:
-            plt.figure()
-            plt.imshow(im)
+        plt.figure()
+        plt.imshow(img[0])
     # print(data.shape, target.shape)
 #%%
 #Open examples of files with matlplotlib
@@ -78,8 +77,8 @@ for i in range(6):
 examples_6_2 = enumerate(test_loader_6_2)
 batch_idx, (example_data_6_2, example_targets_6_2) = next(examples_6_2)
 fig = plt.figure()
-for i in range(5):
-  plt.subplot(1,5,i+1)
+for i in range(6):
+  plt.subplot(2,3,i+1)
   plt.tight_layout()
   plt.imshow(example_data_6_2[i][0], cmap='gray', interpolation='none')
   plt.title("Ground Truth: {}".format(example_targets_6_2[i]))
@@ -137,8 +136,8 @@ def train(epoch):
       train_losses.append(loss.item())
       train_counter.append(
         (batch_idx*64) + ((epoch-1)*len(train_loader.dataset)))
-      torch.save(network.state_dict(), '/Users/JP/Documents/Bingo/results/model.pth')
-      torch.save(optimizer.state_dict(), '/Users/JP/Documents/Bingo/results/optimizer.pth')
+      torch.save(network.state_dict(), '/Users/JP/Documents/Crosser-le-Maire/results/model.pth')
+      torch.save(optimizer.state_dict(), '/Users/JP/Documents/Crosser-le-Maire/results/optimizer.pth')
       
 def test():
   network.eval()
@@ -195,7 +194,7 @@ fig = plt.figure()
 for i in range(4):
   plt.subplot(2,4,i+1)
   plt.tight_layout()
-  plt.imshow(example_data[i][0], cmap='gray', interpolation='none')
+  plt.imshow(example_data[i][0], interpolation='none')
   plt.title("Prediction: {}".format(
     output.data.max(1, keepdim=True)[1][i].item()))
   plt.xticks([])
@@ -209,7 +208,10 @@ plt.legend(['Train Loss', 'Test Loss'], loc='upper right')
 plt.xlabel('number of training examples seen')
 plt.ylabel('negative log likelihood loss')
 
+examples_6_2 = enumerate(test_loader_6_2)
+batch_idx, (example_data_6_2, example_targets_6_2) = next(examples_6_2)
 with torch.no_grad():
+    
   example_data_6_2 = torch.from_numpy(np.expand_dims(example_data_6_2[:,0], axis=1))
   output = network(example_data_6_2)
 
@@ -217,21 +219,50 @@ fig = plt.figure()
 for i in range(5):
   plt.subplot(2,3,i+1)
   plt.tight_layout()
-  plt.imshow(example_data_6_2[i][0], cmap='gray', interpolation='none')
+  plt.imshow(example_data_6_2[i][0], interpolation='none')
   plt.title("Prediction: {}".format(
     output.data.max(1, keepdim=True)[1][i].item()))
   plt.xticks([])
   plt.yticks([])
 
 #%%
+#Test add contrast
+
+examples_6_2 = enumerate(test_loader_6_2)
+batch_idx, (example_data_6_2, example_targets_6_2) = next(examples_6_2)
+data=[]
+with torch.no_grad():
+    for i in range(0,len(example_data_6_2)):
+        example_data_6_2[i] = torchvision.transforms.functional.adjust_contrast(example_data_6_2[i],contrast_factor=4)
+        im = torchvision.transforms.functional.center_crop(example_data_6_2[i],output_size=(22,26))
+        example_data_6_2[i] = torchvision.transforms.functional.resize(im,size=(28,28))
+    example_data_6_2 = torch.from_numpy(np.expand_dims(example_data_6_2[:,0], axis=1))
+    output = network(example_data_6_2)
+        
+fig = plt.figure()
+plt.plot(train_counter, train_losses, color='blue')
+plt.scatter(test_counter_6_2, test_losses_6_2, color='red')
+plt.legend(['Train Loss', 'Test Loss'], loc='upper right')
+plt.xlabel('number of training examples seen')
+plt.ylabel('negative log likelihood loss')
+fig = plt.figure()
+for i in range(5):
+  plt.subplot(2,3,i+1)
+  plt.tight_layout()
+  plt.imshow(example_data_6_2[i][0], interpolation='none')
+  plt.title("Prediction: {}".format(
+    output.data.max(1, keepdim=True)[1][i].item()))
+  plt.xticks([])
+  plt.yticks([])
+#%%
 #Continue the training
 continued_network = Net()
 continued_optimizer = optim.SGD(network.parameters(), lr=learning_rate,
                                 momentum=momentum)
-network_state_dict = torch.load('/Users/JP/Documents/Bingo/results/model.pth')
+network_state_dict = torch.load('/Users/JP/Documents/Crosser-le-Maire/results/model.pth')
 continued_network.load_state_dict(network_state_dict)
 
-optimizer_state_dict = torch.load('/Users/JP/Documents/Bingo/results/optimizer.pth')
+optimizer_state_dict = torch.load('/Users/JP/Documents/Crosser-le-Maire/results/optimizer.pth')
 continued_optimizer.load_state_dict(optimizer_state_dict)
 #%%
 for i in range(4,6):
