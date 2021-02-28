@@ -1,5 +1,7 @@
 import numpy as np
 from collections import Counter
+from PIL import Image
+from glob import glob
 
 class CardStack(type):
     def __iter__(cls):
@@ -22,8 +24,9 @@ class Card(metaclass=CardStack):
                          3:{'00','01','02','03','04','12','22','32','42'},
                          4:{str(i)+str(j) for i in range(0,5) for j in range(0,5)}}
         if position_dict[round_number].issubset(self.tokens):
-            print(f'Bingo! Round {round_number}. Numéro de série {self.serial}.')
-
+            print(f"Bingo! Round {round_number}. Carte numéro {self.serial[0]} dans l'image qui va s'ouvrir.")
+            print(self.serial[2])
+            self.serial[1].show()
 
     def draw(self,number):
         position = np.where(self.grid==number)
@@ -38,16 +41,16 @@ if __name__ == "__main__":
     #Welcome players and ask for the current round's number.
     print(r"C'est l'heure de jouer aux bingo!!! À quelle ronde sommes-nous rendus?")
     round_number = int(input())
-    print("Ok c'est parti pour la ronde 1!")
+    print(f"Ok c'est parti pour la ronde {round_number}!")
 
     #Get file with cards, populate CardStack.
-    with open("cards.txt") as fp:
-        lines = fp.readlines()
-        for line in lines:
-            numbers_list = [int(string) for string in line.rstrip().split(' ')]
-            arr = np.array(numbers_list[:-1]).reshape(5,5)
-            serial = numbers_list[-1]
-            card = Card(arr,serial)
+    for file in glob(r"Fichiers_npy\*.npy"):
+        four_cards = np.load(file, allow_pickle=True)
+        i = 1
+        for grid in four_cards[0]:
+            serial = [i,four_cards[1],file]
+            card = Card(grid,serial)
+            i += 1
 
     #Draw numbers until bingo.
     while True:
