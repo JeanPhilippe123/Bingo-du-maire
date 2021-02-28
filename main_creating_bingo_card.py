@@ -77,8 +77,9 @@ def create_array(line,column,coord,prediction):
 
 main_directory = '/Users/JP/Documents/Crosser-le-Maire'
 directory = main_directory+'/Photos_cartes_bingo/'
-Images_path = glob.glob(directory+'*.jpg')[6:7]
+Images_path = glob.glob(directory+'*.jpg')[:]
 n=0
+m=0
 
 for i in range(0,len(Images_path)):
     try:
@@ -90,7 +91,6 @@ for i in range(0,len(Images_path)):
         # plt.imshow(image_mod)
         # coord,image_mod = ti.resize_with_coord(coord,image_mod)
         x1,y1,x2,y2 = coord.transpose()
-        # plt.figure()
         img_number = []
         prediction = []
         for j in range(0,len(coord)):
@@ -103,12 +103,12 @@ for i in range(0,len(Images_path)):
         #Find line and columns
         line,columns = find_position(coord)
         
-        fig,ax=plt.subplots(1,1)
-        ax.imshow(image_mod)
-        for i in range(0,len(coord)):
-            rect= patches.Rectangle((x1[i],y1[i]),x2[i]-x1[i],y2[i]-y1[i],linewidth=1, edgecolor='g', facecolor='none')
-            ax.add_patch(rect)
-            ax.text(x1[i],y1[i],str(prediction[i]),color='r')    
+        # fig,ax=plt.subplots(1,1)
+        # ax.imshow(image_mod)
+        # for i in range(0,len(coord)):
+        #     rect= patches.Rectangle((x1[i],y1[i]),x2[i]-x1[i],y2[i]-y1[i],linewidth=1, edgecolor='g', facecolor='none')
+        #     ax.add_patch(rect)
+        #     ax.text(x1[i],y1[i],str(prediction[i]),color='r')    
         # fig,ax=plt.subplots(1,1)
         # ax.imshow(image_mod)
         # for i in range(0,len(coord)):
@@ -125,6 +125,10 @@ for i in range(0,len(Images_path)):
         #Create array
         card_bingo = create_array(line,columns,coord,prediction)
         np.save(main_directory+'/Fichiers_npy/'+str(i)+'.npy',[card_bingo,image_card_bingo])
-    except IndexError:
-        print(i,Images_path[i],'\n')
+    except:
+        # print(i,Images_path[i],'\n')
         n+=1
+    if (card_bingo>=90).any():
+        # print(i,Images_path[i],'\n')
+        m+=1
+        

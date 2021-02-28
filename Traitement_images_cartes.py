@@ -86,6 +86,13 @@ def check_for_9(image):
         check=False
     return check
 
+def check_bug_not_9(image):
+    if not np.mean([np.mean(image[:3,:10]),np.mean(image[:3,-10:])])<10:
+        check=True
+    else:
+        check=False
+    return check
+
 def check_point_central_bas(image):
     if np.mean(image[30:35,20:30])>200:
         check=True
@@ -107,6 +114,7 @@ def make_prediction(image,coord):
     point_6 = check_for_6(img_number)
     point_9 = check_for_9(img_number)
     point_haut_milieu_droit = check_point_haut_milieu_droit(img_number)
+    bug_not_9 = check_bug_not_9(img_number)
     
     if points_bas==True:
         if bar_centre_vertical==True:
@@ -130,6 +138,10 @@ def make_prediction(image,coord):
     elif point_6==True:
         prediction=6
     elif point_9==True:
+        if bug_not_9:
+            # img_number = cv2.resize(img_number[3:], (50,50))
+            plt.figure()
+            plt.imshow(img_number)
         prediction=9
     else:
         prediction=8
@@ -142,8 +154,7 @@ def image_processing(image):
     image = cv2.resize(image, (2000,2000),interpolation=cv2.INTER_CUBIC)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-    
-    thresh = cv2.threshold(blurred, 200, 255,cv2.THRESH_TOZERO)[1]
+    thresh = cv2.threshold(blurred, 140, 255,cv2.THRESH_TOZERO)[1]
     thresh = cv2.threshold(thresh, 0, 255,cv2.THRESH_BINARY)[1]
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (1, 5))
     image_mod = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
@@ -182,7 +193,7 @@ def find_number(image):
         f2 = not ((y>1300 and y<1500) and (x>450 and x<550))
         f3 = not ((y>450 and y<550) and (x>1450 and x<1500))
         f4 = not ((y>1300 and y<1500) and (x>1450 and x<1500))
-        if (w >= 40 and w <= 80) and (h >= 85 and h <= 100) and y >=50 and bingo_c and f1 and f2 and f3 and f4:
+        if (w >= 40 and w <= 80) and (h >= 85 and h <= 100) and y >=50 and x>=50 and bingo_c and f1 and f2 and f3 and f4:
             # rect= patches.Rectangle((x,y),w,h,linewidth=1, edgecolor='g', facecolor='none')
             # ax.add_patch(rect)
             coord.append([x, y, w+x, h+y])
@@ -204,11 +215,12 @@ def find_number_2(image):
         #Remove Bingo
         bingo_c = (y<=800 or y>=1100)
         #Remove free
-        f1 = not ((y>300 and y<500) and (x>450 and x<550))
-        f2 = not ((y>1500 and y<1650) and (x>450 and x<550))
+        f1 = not ((y>300 and y<500) and (x>320 and x<550))
+        f2 = not ((y>1500 and y<1650) and (x>320 and x<550))
         f3 = not ((y>300 and y<500) and (x>1450 and x<1600))
         f4 = not ((y>1500 and y<1650) and (x>1450 and x<1600))
-        if (w >= 40 and w <= 100) and (h >= 85 and h <= 160) and bingo_c and f1 and f2 and f3 and f4:
+        bar_vert = not (x>930 and x<1050)
+        if (w >= 40 and w <= 100) and bar_vert and (h >= 85 and h <= 160) and bingo_c and f1 and f2 and f3 and f4:
             # rect= patches.Rectangle((x,y),w,h,linewidth=1, edgecolor='g', facecolor='none')
             # ax.add_patch(rect)
             coord.append([x, y, w+x, h+y])
