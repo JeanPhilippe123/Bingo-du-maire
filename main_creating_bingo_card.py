@@ -85,7 +85,7 @@ for i in range(0,len(Images_path)):
     try:
         #Load the example image
         image = cv2.imread(Images_path[i])
-        image_card_bingo = PIL.Image.open(Images_path[0])
+        image_card_bingo = PIL.Image.open(Images_path[i])
         image_mod = ti.image_processing(image)
         coord,image_mod = ti.find_numbers_and_resize(image_mod)
         # plt.imshow(image_mod)
@@ -130,5 +130,7 @@ for i in range(0,len(Images_path)):
         n+=1
     if (card_bingo>=90).any():
         # print(i,Images_path[i],'\n')
+        # plt.figure()
+        # plt.imshow(image_card_bingo)
         m+=1
         
