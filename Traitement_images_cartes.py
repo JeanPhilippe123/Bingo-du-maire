@@ -87,7 +87,7 @@ def check_for_9(image):
     return check
 
 def check_bug_not_9(image):
-    if not np.mean([np.mean(image[:3,:10]),np.mean(image[:3,-10:])])<10:
+    if not np.mean([np.mean(image[:2,:10]),np.mean(image[:2,-10:])])<30:
         check=True
     else:
         check=False
@@ -100,9 +100,8 @@ def check_point_central_bas(image):
         check=False
     return check
 
-def make_prediction(image,coord):
+def predict(img_number,coord):
     [x1, y1, x2, y2] = coord
-    img_number = image
     points_bas = check_points_bas(img_number)
     bar_centre_vertical = check_bar_central(img_number)
     bar_4 = check_bar_4(img_number)
@@ -115,7 +114,7 @@ def make_prediction(image,coord):
     point_9 = check_for_9(img_number)
     point_haut_milieu_droit = check_point_haut_milieu_droit(img_number)
     bug_not_9 = check_bug_not_9(img_number)
-    
+    bugged=0
     if points_bas==True:
         if bar_centre_vertical==True:
             prediction=1
@@ -138,23 +137,31 @@ def make_prediction(image,coord):
     elif point_6==True:
         prediction=6
     elif point_9==True:
-        if bug_not_9:
-            # img_number = cv2.resize(img_number[3:], (50,50))
-            plt.figure()
-            plt.imshow(img_number)
+        if bug_not_9==True:
+            bugged=1
         prediction=9
     else:
         prediction=8
             
+    return prediction,bugged
+
+def make_prediction(img_number,coord):
+    prediction, bugged  = predict(img_number,coord)
+    plt.figure()
+    while bugged==1 and prediction==9:
+        img_number = cv2.resize(img_number[1:], (50,50))
+        prediction,bugged = predict(img_number,coord)
+        plt.imshow(img_number)
+        plt.title(prediction)
     return prediction
 
 def image_processing(image):
     # pre-process the image by resizing it, converting it to
     image = imutils.resize(image, height=2000)
-    image = cv2.resize(image, (2000,2000),interpolation=cv2.INTER_CUBIC)
+    image = cv2.resize(image, (2000,2000), interpolation=cv2.INTER_CUBIC)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-    thresh = cv2.threshold(blurred, 140, 255,cv2.THRESH_TOZERO)[1]
+    thresh = cv2.threshold(blurred, 180, 255,cv2.THRESH_TOZERO)[1]
     thresh = cv2.threshold(thresh, 0, 255,cv2.THRESH_BINARY)[1]
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (1, 5))
     image_mod = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)

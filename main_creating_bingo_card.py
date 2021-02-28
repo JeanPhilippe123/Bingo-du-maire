@@ -120,16 +120,17 @@ for i in range(0,len(Images_path)):
         # for i in range(0,len(coord)):
         #     rect= patches.Rectangle((x1[i],y1[i]),x2[i]-x1[i],y2[i]-y1[i],linewidth=1, edgecolor='g', facecolor='none')
         #     ax.add_patch(rect)
-        #     ax.text(x1[i],y1[i],str(columns[i]),color='r')    
+        #     ax.text(x1[i],y1[i],str(columns[i]),color='r')
         
         #Create array
         card_bingo = create_array(line,columns,coord,prediction)
         np.save(main_directory+'/Fichiers_npy/'+str(i)+'.npy',[card_bingo,image_card_bingo])
+        print('Checking: ',i,Images_path[i],'\n')
     except:
         # print(i,Images_path[i],'\n')
         n+=1
     if (card_bingo>=90).any():
-        # print(i,Images_path[i],'\n')
+        print(i,Images_path[i],'\n')
         # plt.figure()
         # plt.imshow(image_card_bingo)
         m+=1
